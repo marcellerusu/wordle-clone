@@ -2,7 +2,7 @@ import styled from "styled-components";
 import Overlay from "./Overlay";
 import CloseIcon from "../icons/Close";
 import { colors } from "../utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const Modal = styled.article`
   box-shadow: 0 4px 23px 0 rgb(0 0 0 / 20%);
@@ -11,9 +11,23 @@ const Modal = styled.article`
   border-radius: 8px;
   padding: 1em;
 
-  &[data-closing="true"] {
+  &[data-state="opening"] {
+    animation-name: slide-in;
+    animation-duration: 200ms;
+  }
+
+  &[data-state="closing"] {
     animation-name: slide-out;
     animation-duration: 200ms;
+  }
+
+  @keyframes slide-in {
+    0% {
+      transform: translate(0, 200%);
+    }
+    100% {
+      transform: translate(0, 0%);
+    }
   }
 
   @keyframes slide-out {
@@ -79,14 +93,20 @@ const Row = styled.div`
 `;
 
 const HelpModal = ({ onClose }) => {
-  const [isClosing, setIsClosing] = useState(false);
+  const [openingState, setOpeningState] = useState("opening");
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setOpeningState("open"), 1000);
+    return () => clearTimeout(timeout);
+  }, []);
+
   const handleClose = () => {
-    setIsClosing(true);
+    setOpeningState("closing");
     setTimeout(onClose, 200);
   };
   return (
     <Overlay onClose={handleClose}>
-      <Modal onClick={handleClose} data-closing={isClosing}>
+      <Modal onClick={handleClose} data-state={openingState}>
         <CloseIcon />
         <p>
           Guess the <strong>WORDLE</strong> in six tries.

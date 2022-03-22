@@ -1,12 +1,16 @@
 import { useState } from "react";
 import HelpModal from "./components/HelpModal";
+import Nav from "./components/Nav";
+import Store from "./store";
+
 function App() {
-  const [showHelp, setShowHelp] = useState(true);
+  const state = Store.fromState(useState());
+  const [{ isHelpVisible }, { hideHelp }] = state;
   return (
-    <div>
-      Test
-      {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
-    </div>
+    <Store.context.Provider value={state}>
+      <Nav />
+      {isHelpVisible && <HelpModal onClose={hideHelp} />}
+    </Store.context.Provider>
   );
 }
 
