@@ -96,11 +96,20 @@ const HelpModal = ({ onClose }) => {
   const [openingState, setOpeningState] = useState("opening");
 
   useEffect(() => {
-    const timeout = setTimeout(() => setOpeningState("open"), 1000);
-    return () => clearTimeout(timeout);
+    let stillActive = true;
+    const timeout = setTimeout(() => {
+      if (!stillActive) return;
+      setOpeningState("open");
+    }, 1000);
+
+    return () => {
+      stillActive = false;
+      clearTimeout(timeout);
+    };
   }, []);
 
-  const handleClose = () => {
+  const handleClose = (e) => {
+    e.stopPropagation();
     setOpeningState("closing");
     setTimeout(onClose, 200);
   };

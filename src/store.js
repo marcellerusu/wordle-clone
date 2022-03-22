@@ -20,6 +20,7 @@ function createStore(value, { computed, setters }) {
 
 const defaultState = {
   isHelpVisible: true,
+  isMoreMenuVisible: false,
 };
 
 export default createStore(defaultState, {
@@ -29,6 +30,12 @@ export default createStore(defaultState, {
     },
     hideHelp(state) {
       return { ...state, isHelpVisible: false };
+    },
+    showMoreMenu(state) {
+      return { ...state, isMoreMenuVisible: true };
+    },
+    hideMoreMenu(state) {
+      return { ...state, isMoreMenuVisible: false };
     },
   },
 });

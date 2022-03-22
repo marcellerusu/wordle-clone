@@ -24,7 +24,9 @@ const Group = styled.div`
 `;
 
 const Title = styled.h1`
-  margin: 0;
+  margin-top: -0.25em;
+  margin-bottom: -1em;
+  font-size: 2.5em;
   font-family: "nyt-karnakcondensed";
 `;
 
