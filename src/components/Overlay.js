@@ -12,7 +12,7 @@ const Modal = styled.div`
 const ModalContainer = styled.div`
   position: fixed;
   display: flex;
-  justify-content: center;
+  justify-content: ${({ left }) => (left ? "start" : "center")};
   align-items: center;
   top: 0;
   left: 0;
@@ -20,10 +20,10 @@ const ModalContainer = styled.div`
   height: 100%;
 `;
 
-const Overlay = ({ children, onClose }) => {
+const Overlay = ({ left, children, onClose }) => {
   return (
     <ModalContainer tabIndex="-1" onClick={onClose}>
-      <Modal>{children}</Modal>
+      <Modal left>{children}</Modal>
     </ModalContainer>
   );
 };

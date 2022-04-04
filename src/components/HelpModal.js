@@ -1,8 +1,8 @@
 import styled from "styled-components";
+import { useState } from "react";
 import Overlay from "./Overlay";
 import CloseIcon from "../icons/Close";
-import { colors } from "../utils";
-import { useEffect, useState } from "react";
+import GameTile from "./GameTile";
 
 const Modal = styled.article`
   box-shadow: 0 4px 23px 0 rgb(0 0 0 / 20%);
@@ -40,54 +40,6 @@ const Modal = styled.article`
   }
 `;
 
-const GameTile = styled.h1`
-  /* Root styling start */
-  font-family: "Helvetica Neue";
-  text-align: center;
-  &:not(:first-child) {
-    margin-left: 5px;
-  }
-  width: 40px;
-  height: 40px;
-  font-size: 33px;
-  margin: 0;
-  /* Root styling end */
-  /* Animation start */
-  @keyframes rotate {
-    0% {
-      background: white;
-      border: 2px solid #878a8c;
-      transform: rotateX(-180deg);
-    }
-    100% {
-      transform: rotateX(0deg);
-    }
-  }
-  &[data-state="correct"] {
-    animation-name: rotate;
-    animation-duration: 1s;
-    background: ${colors.green};
-  }
-  &[data-state="wrong-location"] {
-    animation-name: rotate;
-    animation-duration: 1s;
-    background: ${colors.yellow};
-  }
-  &[data-state="incorrect"] {
-    animation-name: rotate;
-    animation-duration: 1s;
-    background: ${colors.grey};
-  }
-  /* Animation end */
-  &:not([data-state="empty"]) {
-    color: white;
-    border: 2px solid #00000000;
-  }
-  &[data-state="empty"] {
-    border: 2px solid #878a8c;
-  }
-`;
-
 const Row = styled.div`
   display: flex;
 `;
@@ -95,24 +47,12 @@ const Row = styled.div`
 const HelpModal = ({ onClose }) => {
   const [openingState, setOpeningState] = useState("opening");
 
-  useEffect(() => {
-    let stillActive = true;
-    const timeout = setTimeout(() => {
-      if (!stillActive) return;
-      setOpeningState("open");
-    }, 1000);
-
-    return () => {
-      stillActive = false;
-      clearTimeout(timeout);
-    };
-  }, []);
-
   const handleClose = (e) => {
     e.stopPropagation();
     setOpeningState("closing");
-    setTimeout(onClose, 200);
+    setTimeout(onClose, 100);
   };
+
   return (
     <Overlay onClose={handleClose}>
       <Modal onClick={handleClose} data-state={openingState}>

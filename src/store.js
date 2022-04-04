@@ -21,12 +21,19 @@ function createStore(value, { computed, setters }) {
 const defaultState = {
   isHelpVisible: true,
   isMoreMenuVisible: false,
+  paused: false,
 };
 
 export default createStore(defaultState, {
   setters: {
     showHelp(state) {
       return { ...state, isHelpVisible: true };
+    },
+    pause(state) {
+      return { ...state, paused: true };
+    },
+    unpause(state) {
+      return { ...state, paused: false };
     },
     hideHelp(state) {
       return { ...state, isHelpVisible: false };

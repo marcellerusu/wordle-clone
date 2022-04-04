@@ -31,11 +31,11 @@ const Title = styled.h1`
 `;
 
 const Nav = () => {
-  const [, { showHelp }] = useContext(Store.context);
+  const [, { showHelp, showMoreMenu }] = useContext(Store.context);
   return (
     <NavContainer>
       <Group>
-        <Hamburger />
+        <Hamburger onClick={showMoreMenu} />
         <QuestionMark onClick={showHelp} />
       </Group>
       <Group>
