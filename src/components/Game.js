@@ -40,18 +40,16 @@ let RowContainer = styled.div`
   margin-top: 0.5em;
 `;
 
-function useKeyDown(onKey, onBack, onEnter) {
+function useKeyDown(handlers, fallbackHandler) {
   let [{ isHelpVisible, paused }] = useContext(Store.context);
   useEffect(() => {
     function onKeyDown(e) {
       if (paused) return;
       if (isHelpVisible) return;
-      if (e.key === "Enter") {
-        onEnter();
-      } else if (e.key === "Backspace") {
-        onBack();
-      } else if (e.key.match(/[a-zA-Z]/)[0] === e.key) {
-        onKey(e.key);
+      if (e.key in handlers) {
+        handlers[e.key]();
+      } else if (fallbackHandler) {
+        fallbackHandler(e.key);
       }
     }
     window.addEventListener("keydown", onKeyDown);
@@ -105,14 +103,12 @@ function useCheck(word, flipped) {
 function Row({ word, rowIndex, flipped }) {
   let [shake, setShake] = useState(false);
   let match = useCheck(word, flipped);
-  useKeyDown(
-    () => {},
-    () => {},
-    () => {
+  useKeyDown({
+    Enter() {
       setShake(true);
       setTimeout(() => setShake(false), 200);
-    }
-  );
+    },
+  });
   return (
     <RowContainer shake={shake && word?.length < 5 && word?.length > 0}>
       {Array.from({ length: 5 }, (_, i) => (
@@ -181,21 +177,22 @@ function Keyboard() {
   function unsetKey() {
     setTimeout(() => setKey(null), 200);
   }
-  function onChange(key) {
-    setKey(key.toUpperCase());
-    unsetKey();
-  }
-  function onBack() {
-    setKey("BACK");
-    unsetKey();
-  }
-
-  function onEnter() {
-    setKey("ENTER");
-    unsetKey();
-  }
-
-  useKeyDown(onChange, onBack, onEnter);
+  useKeyDown(
+    {
+      Backspace() {
+        setKey("BACK");
+        unsetKey();
+      },
+      Enter() {
+        setKey("ENTER");
+        unsetKey();
+      },
+    },
+    (key) => {
+      setKey(key.toUpperCase());
+      unsetKey();
+    }
+  );
 
   return (
     <KeyboardContainer>
@@ -229,32 +226,32 @@ let MainContainer = styled.div`
 function Game() {
   let [guesses, setGuesses] = useState([""]);
 
-  let onChange = useCallback((letter) => {
-    setGuesses((guesses) => {
-      let currWord = guesses.at(-1);
-      if (currWord.length === 5) {
-        return guesses;
-      }
-      return [...guesses.slice(0, -1), currWord + letter];
-    });
-  }, []);
-
-  let onDelete = useCallback(() => {
-    setGuesses((guesses) => {
-      let [prevWords, currWord] = [guesses.slice(0, -1), guesses.at(-1)];
-      return [...prevWords, currWord.slice(0, -1)];
-    });
-  }, []);
-
-  let onEnter = useCallback(() => {
-    setGuesses((guesses) => {
-      if (!guesses.at(-1)) return guesses;
-      if (guesses.at(-1).length < 5) return guesses;
-      return [...guesses, ""];
-    });
-  }, []);
-
-  useKeyDown(onChange, onDelete, onEnter);
+  useKeyDown(
+    {
+      Enter() {
+        setGuesses((guesses) => {
+          if (!guesses.at(-1)) return guesses;
+          if (guesses.at(-1).length < 5) return guesses;
+          return [...guesses, ""];
+        });
+      },
+      Backspace() {
+        setGuesses((guesses) => {
+          let [prevWords, currWord] = [guesses.slice(0, -1), guesses.at(-1)];
+          return [...prevWords, currWord.slice(0, -1)];
+        });
+      },
+    },
+    (letter) => {
+      setGuesses((guesses) => {
+        let currWord = guesses.at(-1);
+        if (currWord.length === 5) {
+          return guesses;
+        }
+        return [...guesses.slice(0, -1), currWord + letter];
+      });
+    }
+  );
 
   return (
     <MainContainer>
