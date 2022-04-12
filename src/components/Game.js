@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 import Store from "../store";
 import GameTile from "./GameTile";
@@ -33,14 +33,15 @@ let RowContainer = styled.div`
       transform: translate3d(4px, 0, 0);
     }
   }
-  animation: ${({ shake }) =>
-    shake ? "shake 1s cubic-bezier(0.36, 0.07, 0.19, 0.97) both" : "unset"};
+  &[data-state="shaking"] {
+    animation: shake 1s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  }
   transform: translate3d(0, 0, 0);
   display: flex;
   margin-top: 0.5em;
 `;
 
-function useKeyDown(handlers, fallbackHandler) {
+function useKeyDown(handlers, dependencies = []) {
   let [{ isHelpVisible, paused }] = useContext(Store.context);
   useEffect(() => {
     function onKeyDown(e) {
@@ -48,13 +49,13 @@ function useKeyDown(handlers, fallbackHandler) {
       if (isHelpVisible) return;
       if (e.key in handlers) {
         handlers[e.key]();
-      } else if (fallbackHandler) {
-        fallbackHandler(e.key);
+      } else if (handlers.on && e.key.length === 1) {
+        handlers.on(e.key);
       }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isHelpVisible, paused]);
+  }, [isHelpVisible, paused, ...dependencies]);
 }
 
 let oneDay = 1000 * 60 * 60 * 24;
@@ -76,8 +77,8 @@ let emptyCheckState = Array.from({ length: 5 }, () => STATES.NOTHING);
 function useCheck(word, flipped) {
   let [match, setMatch] = useState(emptyCheckState);
   word = word?.toLowerCase();
-  let isFullWord = word?.length === 5;
   useEffect(() => {
+    let isFullWord = word?.length === 5;
     if (!isFullWord || !flipped) {
       setMatch(
         Array.from({ length: 5 }, (_, i) =>
@@ -100,17 +101,26 @@ function useCheck(word, flipped) {
   return match;
 }
 
+let ROW_STATES = {
+  true: "shaking",
+  false: "default",
+};
+
 function Row({ word, rowIndex, flipped }) {
-  let [shake, setShake] = useState(false);
+  let [isShaking, setIsShaking] = useState(false);
   let match = useCheck(word, flipped);
-  useKeyDown({
-    Enter() {
-      setShake(true);
-      setTimeout(() => setShake(false), 200);
+  useKeyDown(
+    {
+      Enter() {
+        setIsShaking(word?.length < 5 && word?.length > 0);
+        setTimeout(() => setIsShaking(false), 200);
+      },
     },
-  });
+    [word]
+  );
+
   return (
-    <RowContainer shake={shake && word?.length < 5 && word?.length > 0}>
+    <RowContainer data-state={ROW_STATES[isShaking]}>
       {Array.from({ length: 5 }, (_, i) => (
         <GameTile
           data-state={match[i]}
@@ -128,22 +138,17 @@ let KeyRow = styled.div`
   display: flex;
 `;
 
-function getKey(children) {
-  let [child] = React.Children.toArray(children);
-  if (typeof child === "string") {
-    return child;
-  } else {
-    return "BACK";
-  }
-}
-
 let Key = styled.div`
-  background: ${({ pressedKey, children }) =>
-    pressedKey === getKey(children) ? "#d3d6da99" : "#d3d6da"};
-  text-align: center;
   transition: all 20ms linear;
-  transform: ${({ pressedKey, children }) =>
-    pressedKey === getKey(children) ? "scale(1.1)" : "scale(1)"};
+  &[data-state~="pressing"] {
+    transform: scale(1.1);
+  }
+  &[data-state~="guessed"] {
+    background: #4f4f4f;
+    color: white;
+  }
+  background: #d3d6da;
+  text-align: center;
   font-weight: bolder;
   display: flex;
   align-items: center;
@@ -166,50 +171,60 @@ let KeyboardContainer = styled.div`
   flex-direction: column;
   align-items: center;
 `;
+
 const KEYS = [
   ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
   ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
   ["ENTER", "Z", "X", "C", "V", "B", "N", "M", <BackSpace />],
 ];
 
-function Keyboard() {
+function combineCssStates(states) {
+  let state = "";
+  for (let key in states) {
+    if (!states[key]) continue;
+    state += key + " ";
+  }
+  return state.trim();
+}
+
+function Keyboard({ guesses }) {
   let [pressedKey, setKey] = useState(null);
-  function unsetKey() {
+
+  function setKeyTemporarily(key) {
+    setKey(key);
     setTimeout(() => setKey(null), 200);
   }
-  useKeyDown(
-    {
-      Backspace() {
-        setKey("BACK");
-        unsetKey();
-      },
-      Enter() {
-        setKey("ENTER");
-        unsetKey();
-      },
+
+  useKeyDown({
+    Backspace() {
+      setKeyTemporarily("BACK");
     },
-    (key) => {
-      setKey(key.toUpperCase());
-      unsetKey();
-    }
-  );
+    Enter() {
+      setKeyTemporarily("ENTER");
+    },
+    on(key) {
+      setKeyTemporarily(key.toUpperCase());
+    },
+  });
+
+  function keyState(key) {
+    if (typeof key !== "string") key = "BACK";
+
+    let guessed = guesses
+      .slice(0, -1)
+      .some((guess) => guess.toUpperCase().includes(key));
+
+    let pressing = key === pressedKey;
+
+    return combineCssStates({ pressing, guessed });
+  }
 
   return (
     <KeyboardContainer>
       {KEYS.map((row, i) => (
         <KeyRow key={`keyboard-row-${i}`}>
           {row.map((key) => (
-            <Key
-              onClick={() => {
-                if (key === "ENTER") key = "Enter";
-                if (typeof key !== "string") key = "Backspace";
-                document.dispatchEvent(
-                  new KeyboardEvent("keydown", { keyCode: key })
-                );
-              }}
-              pressedKey={pressedKey}
-              key={key}
-            >
+            <Key data-state={keyState(key)} key={key}>
               {key}
             </Key>
           ))}
@@ -226,23 +241,21 @@ let MainContainer = styled.div`
 function Game() {
   let [guesses, setGuesses] = useState([""]);
 
-  useKeyDown(
-    {
-      Enter() {
-        setGuesses((guesses) => {
-          if (!guesses.at(-1)) return guesses;
-          if (guesses.at(-1).length < 5) return guesses;
-          return [...guesses, ""];
-        });
-      },
-      Backspace() {
-        setGuesses((guesses) => {
-          let [prevWords, currWord] = [guesses.slice(0, -1), guesses.at(-1)];
-          return [...prevWords, currWord.slice(0, -1)];
-        });
-      },
+  useKeyDown({
+    Enter() {
+      setGuesses((guesses) => {
+        if (!guesses.at(-1)) return guesses;
+        if (guesses.at(-1).length < 5) return guesses;
+        return [...guesses, ""];
+      });
     },
-    (letter) => {
+    Backspace() {
+      setGuesses((guesses) => {
+        let [prevWords, currWord] = [guesses.slice(0, -1), guesses.at(-1)];
+        return [...prevWords, currWord.slice(0, -1)];
+      });
+    },
+    on(letter) {
       setGuesses((guesses) => {
         let currWord = guesses.at(-1);
         if (currWord.length === 5) {
@@ -250,8 +263,8 @@ function Game() {
         }
         return [...guesses.slice(0, -1), currWord + letter];
       });
-    }
-  );
+    },
+  });
 
   return (
     <MainContainer>
@@ -265,7 +278,7 @@ function Game() {
           />
         ))}
       </Container>
-      <Keyboard />
+      <Keyboard guesses={guesses} />
     </MainContainer>
   );
 }
