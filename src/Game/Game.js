@@ -110,7 +110,7 @@ function Row({ word, rowIndex, flipped }) {
           large
           key={`worlde-game-tile-${rowIndex}-${i}-${word?.[i]}`}
         >
-          {word?.[i] || ""}
+          {word?.[i]?.toLowerCase() || ""}
         </GameTile>
       ))}
     </RowContainer>
@@ -139,6 +139,7 @@ function Game() {
       });
     },
     on(letter) {
+      letter = letter.toUpperCase();
       setGuesses((guesses) => {
         let currWord = guesses.at(-1);
         if (currWord.length === 5) {

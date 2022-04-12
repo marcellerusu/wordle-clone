@@ -9,7 +9,7 @@ export function useKeyDown(handlers, dependencies = []) {
       if (isHelpVisible) return;
       if (e.key in handlers) {
         handlers[e.key]();
-      } else if (handlers.on && e.key.length === 1) {
+      } else if (handlers.on && e.key.length === 1 && e.key.match(/[a-zA-Z]/)) {
         handlers.on(e.key);
       }
     }

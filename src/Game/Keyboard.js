@@ -2,6 +2,7 @@ import { useState } from "react";
 import styled from "styled-components";
 import BackSpace from "../icons/BackSpace";
 import { useKeyDown } from "./utils";
+import css from "../css/cssStates";
 
 let KeyRow = styled.div`
   display: flex;
@@ -47,15 +48,6 @@ const KEYS = [
   ["ENTER", "Z", "X", "C", "V", "B", "N", "M", <BackSpace />],
 ];
 
-function combineCssStates(states) {
-  let state = "";
-  for (let key in states) {
-    if (!states[key]) continue;
-    state += key + " ";
-  }
-  return state.trim();
-}
-
 function Keyboard({ guesses }) {
   let [pressedKey, setKey] = useState(null);
 
@@ -79,13 +71,10 @@ function Keyboard({ guesses }) {
   function keyState(key) {
     if (typeof key !== "string") key = "BACK";
 
-    let guessed = guesses
-      .slice(0, -1)
-      .some((guess) => guess.toUpperCase().includes(key));
-
-    let pressing = key === pressedKey;
-
-    return combineCssStates({ pressing, guessed });
+    return css.define({
+      pressing: key === pressedKey,
+      guessed: guesses.slice(0, -1).some((guess) => guess.includes(key)),
+    });
   }
 
   return (
