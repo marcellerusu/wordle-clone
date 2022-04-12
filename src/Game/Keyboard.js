@@ -4,7 +4,7 @@ import BackSpace from "../icons/BackSpace";
 import { useKeyDown } from "./utils";
 import WORD_OF_THE_DAY from "../store/words";
 import css from "../css/cssStates";
-import { colors } from "../constants/colors";
+import colors from "../constants/colors";
 
 let KeyRow = styled.div`
   display: flex;
@@ -13,16 +13,20 @@ let KeyRow = styled.div`
 let Key = styled.div`
   transition: all 20ms linear;
   &[data-state~="pressing"] {
+    --key-background: ${colors.lightGrey};
     transform: scale(1.1);
   }
   &[data-state~="guessed"] {
-    background: #4f4f4f;
+    --key-background: ${colors.grey};
     color: white;
   }
   &[data-state~="wrong-location"] {
-    background: ${colors.yellow};
+    --key-background: ${colors.yellow};
   }
-  background: #d3d6da;
+  &[data-state=""] {
+    --key-background: ${colors.lightGrey};
+  }
+  background: rgb(var(--key-background));
   text-align: center;
   font-weight: bolder;
   display: flex;
@@ -33,7 +37,7 @@ let Key = styled.div`
   border-radius: 4px;
   cursor: pointer;
   &:hover {
-    background: #d3d6da99;
+    background: rgba(var(--key-background), 50%);
   }
 `;
 

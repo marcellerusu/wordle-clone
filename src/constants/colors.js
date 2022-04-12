@@ -1,6 +1,6 @@
-export const colors = {
-  green: "#6aaa64",
-  yellow: "#c9b458",
-  grey: "#787c7e",
-  lightGrey: "#d3d6da",
+export default {
+  green: "106, 170, 100",
+  yellow: "201, 180, 88",
+  grey: "120, 124, 126",
+  lightGrey: "211, 214, 218",
 };

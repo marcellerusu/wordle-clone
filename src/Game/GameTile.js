@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { colors } from "../constants/colors";
+import colors from "../constants/colors";
 
 const size = {
   large: 60,
@@ -53,17 +53,17 @@ const GameTile = styled.div`
   &[data-state="correct"] {
     animation-name: rotate;
     animation-duration: 1s;
-    background: ${colors.green};
+    background: rgb(${colors.green});
   }
   &[data-state="wrong-location"] {
     animation-name: rotate;
     animation-duration: 1s;
-    background: ${colors.yellow};
+    background: rgb(${colors.yellow});
   }
   &[data-state="incorrect"] {
     animation-name: rotate;
     animation-duration: 1s;
-    background: ${colors.grey};
+    background: rgb(${colors.grey});
   }
   /* Animation end */
   &:not([data-state="empty"], [data-state="guess"]) {

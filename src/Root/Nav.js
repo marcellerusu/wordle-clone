@@ -4,13 +4,14 @@ import Gear from "../icons/Gear";
 import Hamburger from "../icons/Hamburger";
 import QuestionMark from "../icons/QuestionMark";
 import Scores from "../icons/Scores";
-import { colors } from "../constants/colors";
+import colors from "../constants/colors";
 import Store from "../store/global";
+
 const NavContainer = styled.nav`
   display: flex;
   justify-content: space-between;
   padding: 1em;
-  border-bottom: 1px solid ${colors.lightGrey};
+  border-bottom: 1px solid rgb(${colors.lightGrey});
 `;
 
 const Group = styled.div`
