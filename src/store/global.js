@@ -1,22 +1,4 @@
-import React from "react";
-
-function createStore(value, { computed, setters }) {
-  const context = React.createContext(value);
-
-  const fromState = ([state = value, setState]) => {
-    const computedAndSetters = {};
-    for (const key in computed) {
-      computedAndSetters[key] = computed[key](state);
-    }
-    for (const key in setters) {
-      computedAndSetters[key] = (...args) =>
-        setState(setters[key](state, ...args));
-    }
-    return [state, computedAndSetters];
-  };
-
-  return { context, fromState };
-}
+import createStore from "./utils";
 
 const defaultState = {
   isHelpVisible: true,

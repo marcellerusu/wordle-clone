@@ -2,7 +2,7 @@ import styled from "styled-components";
 import { useState } from "react";
 import Overlay from "./Overlay";
 import CloseIcon from "../icons/Close";
-import GameTile from "./GameTile";
+import GameTile from "../Game/GameTile";
 
 const Modal = styled.article`
   box-shadow: 0 4px 23px 0 rgb(0 0 0 / 20%);

@@ -4,8 +4,8 @@ import Gear from "../icons/Gear";
 import Hamburger from "../icons/Hamburger";
 import QuestionMark from "../icons/QuestionMark";
 import Scores from "../icons/Scores";
-import { colors } from "../utils";
-import Store from "../store";
+import { colors } from "../constants/colors";
+import Store from "../store/global";
 const NavContainer = styled.nav`
   display: flex;
   justify-content: space-between;

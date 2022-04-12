@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import styled from "styled-components";
-import Store from "../store";
+import Store from "../store/global";
 import Overlay from "./Overlay";
 
 const Container = styled.div`

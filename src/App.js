@@ -1,20 +1,20 @@
 import { useState } from "react";
-import HelpModal from "./components/HelpModal";
-import Nav from "./components/Nav";
-import More from "./components/More";
-import Store from "./store";
-import Game from "./components/Game";
+import HelpModal from "./Root/HelpModal";
+import Nav from "./Root/Nav";
+import More from "./Root/More";
+import GlobalStore from "./store/global";
+import Game from "./Game/Game";
 
 function App() {
-  const state = Store.fromState(useState());
+  const state = GlobalStore.fromState(useState());
   const [{ isHelpVisible, isMoreMenuVisible }, { hideHelp }] = state;
   return (
-    <Store.context.Provider value={state}>
+    <GlobalStore.Provider value={state}>
       <Nav />
       <Game />
       {isHelpVisible && <HelpModal onClose={hideHelp} />}
       {isMoreMenuVisible && <More />}
-    </Store.context.Provider>
+    </GlobalStore.Provider>
   );
 }
 

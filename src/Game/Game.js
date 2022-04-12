@@ -1,9 +1,9 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import Store from "../store";
 import GameTile from "./GameTile";
 import WORDS from "../words.json";
-import BackSpace from "../icons/BackSpace";
+import Keyboard from "./Keyboard";
+import { useKeyDown } from "./utils";
 
 let Container = styled.div`
   margin-top: 4em;
@@ -40,23 +40,6 @@ let RowContainer = styled.div`
   display: flex;
   margin-top: 0.5em;
 `;
-
-function useKeyDown(handlers, dependencies = []) {
-  let [{ isHelpVisible, paused }] = useContext(Store.context);
-  useEffect(() => {
-    function onKeyDown(e) {
-      if (paused) return;
-      if (isHelpVisible) return;
-      if (e.key in handlers) {
-        handlers[e.key]();
-      } else if (handlers.on && e.key.length === 1) {
-        handlers.on(e.key);
-      }
-    }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isHelpVisible, paused, ...dependencies]);
-}
 
 let oneDay = 1000 * 60 * 60 * 24;
 
@@ -131,106 +114,6 @@ function Row({ word, rowIndex, flipped }) {
         </GameTile>
       ))}
     </RowContainer>
-  );
-}
-
-let KeyRow = styled.div`
-  display: flex;
-`;
-
-let Key = styled.div`
-  transition: all 20ms linear;
-  &[data-state~="pressing"] {
-    transform: scale(1.1);
-  }
-  &[data-state~="guessed"] {
-    background: #4f4f4f;
-    color: white;
-  }
-  background: #d3d6da;
-  text-align: center;
-  font-weight: bolder;
-  display: flex;
-  align-items: center;
-  height: 1.5em;
-  margin: 4px;
-  padding: 1em;
-  border-radius: 4px;
-  cursor: pointer;
-  &:hover {
-    background: #d3d6da99;
-  }
-`;
-
-let KeyboardContainer = styled.div`
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-  flex-direction: column;
-  align-items: center;
-`;
-
-const KEYS = [
-  ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
-  ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
-  ["ENTER", "Z", "X", "C", "V", "B", "N", "M", <BackSpace />],
-];
-
-function combineCssStates(states) {
-  let state = "";
-  for (let key in states) {
-    if (!states[key]) continue;
-    state += key + " ";
-  }
-  return state.trim();
-}
-
-function Keyboard({ guesses }) {
-  let [pressedKey, setKey] = useState(null);
-
-  function setKeyTemporarily(key) {
-    setKey(key);
-    setTimeout(() => setKey(null), 200);
-  }
-
-  useKeyDown({
-    Backspace() {
-      setKeyTemporarily("BACK");
-    },
-    Enter() {
-      setKeyTemporarily("ENTER");
-    },
-    on(key) {
-      setKeyTemporarily(key.toUpperCase());
-    },
-  });
-
-  function keyState(key) {
-    if (typeof key !== "string") key = "BACK";
-
-    let guessed = guesses
-      .slice(0, -1)
-      .some((guess) => guess.toUpperCase().includes(key));
-
-    let pressing = key === pressedKey;
-
-    return combineCssStates({ pressing, guessed });
-  }
-
-  return (
-    <KeyboardContainer>
-      {KEYS.map((row, i) => (
-        <KeyRow key={`keyboard-row-${i}`}>
-          {row.map((key) => (
-            <Key data-state={keyState(key)} key={key}>
-              {key}
-            </Key>
-          ))}
-        </KeyRow>
-      ))}
-    </KeyboardContainer>
   );
 }
 
