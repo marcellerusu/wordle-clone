@@ -2,7 +2,9 @@ import { useState } from "react";
 import styled from "styled-components";
 import BackSpace from "../icons/BackSpace";
 import { useKeyDown } from "./utils";
+import WORD_OF_THE_DAY from "../store/words";
 import css from "../css/cssStates";
+import { colors } from "../constants/colors";
 
 let KeyRow = styled.div`
   display: flex;
@@ -16,6 +18,9 @@ let Key = styled.div`
   &[data-state~="guessed"] {
     background: #4f4f4f;
     color: white;
+  }
+  &[data-state~="wrong-location"] {
+    background: ${colors.yellow};
   }
   background: #d3d6da;
   text-align: center;
@@ -70,10 +75,15 @@ function Keyboard({ guesses }) {
 
   function keyState(key) {
     if (typeof key !== "string") key = "BACK";
+    let pressing = key === pressedKey;
+    let guessed = guesses.slice(0, -1).some((guess) => guess.includes(key));
+    let wrongLocation =
+      guessed && WORD_OF_THE_DAY.map((l) => l.toUpperCase()).includes(key);
 
     return css.define({
-      pressing: key === pressedKey,
-      guessed: guesses.slice(0, -1).some((guess) => guess.includes(key)),
+      pressing,
+      guessed,
+      "wrong-location": wrongLocation,
     });
   }
 

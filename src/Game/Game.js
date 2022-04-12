@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import GameTile from "./GameTile";
-import WORDS from "../words.json";
+import WORD_OF_THE_DAY from "../store/words";
 import Keyboard from "./Keyboard";
 import { useKeyDown } from "./utils";
 
@@ -40,12 +40,6 @@ let RowContainer = styled.div`
   display: flex;
   margin-top: 0.5em;
 `;
-
-let oneDay = 1000 * 60 * 60 * 24;
-
-let WORD_OF_THE_DAY = [
-  ...WORDS[Math.floor(new Date().getTime() / oneDay) - 19084],
-];
 
 let STATES = {
   NOTHING: "empty",
