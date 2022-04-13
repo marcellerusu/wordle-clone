@@ -48,7 +48,7 @@ s.match = (cases) => (test) =>
 
 s.any = new Any();
 
-s.else = new Any();
+s.else = (value) => s.case(s.any, value);
 
 s.oneOf = (array) => new OneOf(array);
 

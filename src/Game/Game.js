@@ -58,7 +58,7 @@ function GuessedRow({ word, rowIndex }) {
       s.match([
         s.case([s("letter"), s("letter")], STATES.CORRECT),
         s.case([s.any, s.oneOf(WORD_OF_THE_DAY)], STATES.WRONG_LOCATION),
-        s.case(s.else, STATES.WRONG),
+        s.else(STATES.WRONG),
       ])
     );
 
