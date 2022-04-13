@@ -4,6 +4,8 @@ import GameTile from "./GameTile";
 import WORD_OF_THE_DAY from "../store/words";
 import Keyboard from "./Keyboard";
 import { useKeyDown } from "./utils";
+import * as fp from "../fp";
+import s from "../schema";
 
 let Container = styled.div`
   margin-top: 4em;
@@ -41,18 +43,6 @@ let RowContainer = styled.div`
   margin-top: 0.5em;
 `;
 
-let fp = {
-  match: (cases) => (test) =>
-    cases.find(([expr]) => {
-      if (expr instanceof RegExp) {
-        console.log("regex", test, expr, expr.test(test));
-        return expr.test(test);
-      } else {
-        return expr === test;
-      }
-    })?.[1],
-};
-
 let STATES = {
   NOTHING: "empty",
   GUESS: "guess",
@@ -62,14 +52,13 @@ let STATES = {
 };
 
 function GuessedRow({ word, rowIndex }) {
-  let match = WORD_OF_THE_DAY.map((letter, index) => {
-    if (word[index] === letter) {
-      return STATES.CORRECT;
-    } else if (WORD_OF_THE_DAY.includes(word[index])) {
-      return STATES.WRONG_LOCATION;
-    }
-    return STATES.WRONG;
-  });
+  let match = fp.zip(WORD_OF_THE_DAY, word).map(
+    s.match([
+      [[s("letter"), s("letter")], STATES.CORRECT],
+      [[s.any, s.oneOf(WORD_OF_THE_DAY)], STATES.WRONG_LOCATION],
+      [s.else, STATES.WRONG],
+    ])
+  );
 
   return (
     <RowContainer>
@@ -95,7 +84,7 @@ function IncompleteRow({ word, rowIndex }) {
   word = word.padEnd(5);
   let [isShaking, setIsShaking] = useState(false);
   let match = [...word].map(
-    fp.match([
+    s.match([
       [/[a-z]/, STATES.GUESS],
       [" ", STATES.NOTHING],
     ])
