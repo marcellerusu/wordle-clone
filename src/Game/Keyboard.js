@@ -60,20 +60,20 @@ const KEYS = [
 function Keyboard({ guesses }) {
   let [pressedKey, setKey] = useState(null);
 
-  function setKeyTemporarily(key) {
+  function setKeyTemporarilyTo(key) {
     setKey(key);
     setTimeout(() => setKey(null), 200);
   }
 
   useKeyDown({
     Backspace() {
-      setKeyTemporarily("BACK");
+      setKeyTemporarilyTo("BACK");
     },
     Enter() {
-      setKeyTemporarily("ENTER");
+      setKeyTemporarilyTo("ENTER");
     },
     on(key) {
-      setKeyTemporarily(key.toUpperCase());
+      setKeyTemporarilyTo(key.toUpperCase());
     },
   });
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import GameTile from "./GameTile";
 import WORD_OF_THE_DAY from "../store/words";
@@ -41,6 +41,18 @@ let RowContainer = styled.div`
   margin-top: 0.5em;
 `;
 
+let fp = {
+  match: (cases) => (test) =>
+    cases.find(([expr]) => {
+      if (expr instanceof RegExp) {
+        console.log("regex", test, expr, expr.test(test));
+        return expr.test(test);
+      } else {
+        return expr === test;
+      }
+    })?.[1],
+};
+
 let STATES = {
   NOTHING: "empty",
   GUESS: "guess",
@@ -49,47 +61,51 @@ let STATES = {
   WRONG: "incorrect",
 };
 
-let emptyCheckState = Array.from({ length: 5 }, () => STATES.NOTHING);
-
-function useCheck(word, flipped) {
-  let [match, setMatch] = useState(emptyCheckState);
-  word = word?.toLowerCase();
-  useEffect(() => {
-    let isFullWord = word?.length === 5;
-    if (!isFullWord || !flipped) {
-      setMatch(
-        Array.from({ length: 5 }, (_, i) =>
-          word?.[i] ? STATES.GUESS : STATES.NOTHING
-        )
-      );
-      return;
+function GuessedRow({ word, rowIndex }) {
+  let match = WORD_OF_THE_DAY.map((letter, index) => {
+    if (word[index] === letter) {
+      return STATES.CORRECT;
+    } else if (WORD_OF_THE_DAY.includes(word[index])) {
+      return STATES.WRONG_LOCATION;
     }
-    setMatch(
-      WORD_OF_THE_DAY.map((letter, index) => {
-        if (word[index] === letter) {
-          return STATES.CORRECT;
-        } else if (WORD_OF_THE_DAY.includes(word[index])) {
-          return STATES.WRONG_LOCATION;
-        }
-        return STATES.WRONG;
-      })
-    );
-  }, [word, flipped]);
-  return match;
+    return STATES.WRONG;
+  });
+
+  return (
+    <RowContainer>
+      {[...word].map((letter, i) => (
+        <GameTile
+          data-state={match[i]}
+          large
+          key={`worlde-guessed-game-tile-${rowIndex}-${i}-${letter}`}
+        >
+          {letter}
+        </GameTile>
+      ))}
+    </RowContainer>
+  );
 }
 
-let ROW_STATES = {
+let INCOMPLETE_ROW_STATES = {
   true: "shaking",
   false: "default",
 };
 
-function Row({ word, rowIndex, flipped }) {
+function IncompleteRow({ word, rowIndex }) {
+  word = word.padEnd(5);
   let [isShaking, setIsShaking] = useState(false);
-  let match = useCheck(word, flipped);
+  let match = [...word].map(
+    fp.match([
+      [/[a-z]/, STATES.GUESS],
+      [" ", STATES.NOTHING],
+    ])
+  );
+
   useKeyDown(
     {
       Enter() {
-        setIsShaking(word?.length < 5 && word?.length > 0);
+        let trimmedWord = word.trim();
+        setIsShaking(trimmedWord.length < 5 && trimmedWord.length > 0);
         setTimeout(() => setIsShaking(false), 200);
       },
     },
@@ -97,14 +113,14 @@ function Row({ word, rowIndex, flipped }) {
   );
 
   return (
-    <RowContainer data-state={ROW_STATES[isShaking]}>
-      {Array.from({ length: 5 }, (_, i) => (
+    <RowContainer data-state={INCOMPLETE_ROW_STATES[isShaking]}>
+      {[...word].map((letter, i) => (
         <GameTile
           data-state={match[i]}
           large
-          key={`worlde-game-tile-${rowIndex}-${i}-${word?.[i]}`}
+          key={`worlde-game-tile-${rowIndex}-${i}-${letter}`}
         >
-          {word?.[i]?.toLowerCase() || ""}
+          {letter}
         </GameTile>
       ))}
     </RowContainer>
@@ -147,14 +163,21 @@ function Game() {
   return (
     <MainContainer>
       <Container>
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Row
-            key={`worlde-guess-row-${i}`}
-            word={guesses[i]}
-            rowIndex={i}
-            flipped={i < guesses.length - 1}
-          />
-        ))}
+        {Array.from({ length: 6 }).map((_, i) =>
+          i < guesses.length - 1 ? (
+            <GuessedRow
+              key={`worlde-guessed-row-${i}`}
+              word={(guesses[i] || "").toLowerCase()}
+              rowIndex={i}
+            />
+          ) : (
+            <IncompleteRow
+              key={`worlde-incomplete-row-${i}`}
+              word={(guesses[i] || "").toLowerCase()}
+              rowIndex={i}
+            />
+          )
+        )}
       </Container>
       <Keyboard guesses={guesses} />
     </MainContainer>
