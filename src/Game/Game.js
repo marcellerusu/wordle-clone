@@ -82,7 +82,7 @@ let INCOMPLETE_ROW_STATES = {
   false: "default",
 };
 
-function IncompleteRow({ word, rowIndex }) {
+function ActiveRow({ word, rowIndex }) {
   word = word.padEnd(5);
   let [isShaking, setIsShaking] = useState(false);
   let match = [...word].map(
@@ -162,7 +162,7 @@ function Game() {
               rowIndex={i}
             />
           ) : (
-            <IncompleteRow
+            <ActiveRow
               key={`worlde-incomplete-row-${i}`}
               word={(guesses[i] || "").toLowerCase()}
               rowIndex={i}

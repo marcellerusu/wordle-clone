@@ -52,6 +52,6 @@ s.else = new Any();
 
 s.oneOf = (array) => new OneOf(array);
 
-s.case = (array) => array;
+s.case = (...array) => array;
 
 export default s;
