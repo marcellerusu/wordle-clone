@@ -52,13 +52,15 @@ let STATES = {
 };
 
 function GuessedRow({ word, rowIndex }) {
-  let match = fp.zip(WORD_OF_THE_DAY, word).map(
-    s.match([
-      [[s("letter"), s("letter")], STATES.CORRECT],
-      [[s.any, s.oneOf(WORD_OF_THE_DAY)], STATES.WRONG_LOCATION],
-      [s.else, STATES.WRONG],
-    ])
-  );
+  let match = fp
+    .zip(WORD_OF_THE_DAY, word)
+    .map(
+      s.match([
+        s.case([s("letter"), s("letter")], STATES.CORRECT),
+        s.case([s.any, s.oneOf(WORD_OF_THE_DAY)], STATES.WRONG_LOCATION),
+        s.case(s.else, STATES.WRONG),
+      ])
+    );
 
   return (
     <RowContainer>
