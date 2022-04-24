@@ -1,4 +1,5 @@
 class ArrayLengthMismatch extends Error {}
+class NotReached extends Error {}
 
 const fp = {
   zip(first, second) {
@@ -13,6 +14,13 @@ class Any {}
 
 class Else {
   constructor(value) {
+    this.value = value;
+  }
+}
+
+class Case {
+  constructor(patterns, value) {
+    this.patterns = patterns;
     this.value = value;
   }
 }
@@ -73,8 +81,6 @@ function match(pattern, value, captures = new Map()) {
   }
 }
 
-// s.match(s.case(s("a"), { b: s("a") }).is(3));
-
 function matchArray(pattern, value, captures = new Map()) {
   if (pattern.length !== value.length) return false;
   return fp
@@ -85,16 +91,17 @@ function matchArray(pattern, value, captures = new Map()) {
 s.match =
   (...cases) =>
   (...values) => {
-    let match = cases.find((pattern) => {
-      if (pattern instanceof Else) return true;
-      return matchArray(
-        pattern.slice(0, -1),
-        values.slice(0, pattern.length - 1)
-      );
+    let match = cases.find((expr) => {
+      if (expr instanceof Else) {
+        return true;
+      } else if (expr instanceof Case) {
+        let { patterns } = expr;
+        return matchArray(patterns, values.slice(0, patterns.length));
+      }
+      throw new NotReached();
     });
     if (!match) return;
-    if (match instanceof Else) return match.value;
-    return match.at(-1);
+    return match.value;
   };
 
 s.defn =
@@ -108,9 +115,9 @@ s.else = (value) => new Else(value);
 
 s.oneOf = (array) => new OneOf(array);
 
-s.case = (...items) => {
+s.case = (...patterns) => {
   return {
-    is: (value) => [...items, value],
+    is: (value) => new Case(patterns, value),
   };
 };
 

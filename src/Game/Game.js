@@ -53,11 +53,11 @@ let STATES = {
 
 function GuessedRow({ word, rowIndex }) {
   let match = fp
-    .zip(WORD_OF_THE_DAY, word.padEnd(5))
+    .zip(word.padEnd(5), WORD_OF_THE_DAY)
     .map(
       s.match(
         s.case([s("letter"), s("letter")]).is(STATES.CORRECT),
-        s.case([s.any, s.oneOf(WORD_OF_THE_DAY)]).is(STATES.WRONG_LOCATION),
+        s.case([s.oneOf(WORD_OF_THE_DAY), s.any]).is(STATES.WRONG_LOCATION),
         s.else(STATES.WRONG)
       )
     );
@@ -117,7 +117,7 @@ function ActiveRow({ word, rowIndex }) {
 
 let Row = s.defn(
   s.case({ isAlreadyGuessed: true }, s.any).is(GuessedRow),
-  s.case(s.any, s.any).is(ActiveRow)
+  s.else(ActiveRow)
 );
 
 let MainContainer = styled.div`
