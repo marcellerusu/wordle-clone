@@ -53,13 +53,13 @@ let STATES = {
 
 function GuessedRow({ word, rowIndex }) {
   let match = fp
-    .zip(WORD_OF_THE_DAY, word)
+    .zip(WORD_OF_THE_DAY, word.padEnd(5))
     .map(
-      s.match([
-        s.case([s("letter"), s("letter")], STATES.CORRECT),
-        s.case([s.any, s.oneOf(WORD_OF_THE_DAY)], STATES.WRONG_LOCATION),
-        s.else(STATES.WRONG),
-      ])
+      s.match(
+        s.case([s("letter"), s("letter")]).is(STATES.CORRECT),
+        s.case([s.any, s.oneOf(WORD_OF_THE_DAY)]).is(STATES.WRONG_LOCATION),
+        s.else(STATES.WRONG)
+      )
     );
 
   return (
@@ -86,10 +86,7 @@ function ActiveRow({ word, rowIndex }) {
   word = word.padEnd(5);
   let [isShaking, setIsShaking] = useState(false);
   let match = [...word].map(
-    s.match([
-      [/[a-z]/, STATES.GUESS],
-      [" ", STATES.NOTHING],
-    ])
+    s.match(s.case(/[a-z]/).is(STATES.GUESS), s.else(STATES.NOTHING))
   );
 
   useKeyDown(
@@ -117,6 +114,11 @@ function ActiveRow({ word, rowIndex }) {
     </RowContainer>
   );
 }
+
+let Row = s.defn(
+  s.case({ isAlreadyGuessed: true }, s.any).is(GuessedRow),
+  s.case(s.any, s.any).is(ActiveRow)
+);
 
 let MainContainer = styled.div`
   height: 100%;
@@ -154,21 +156,14 @@ function Game() {
   return (
     <MainContainer>
       <Container>
-        {Array.from({ length: 6 }).map((_, i) =>
-          i < guesses.length - 1 ? (
-            <GuessedRow
-              key={`worlde-guessed-row-${i}`}
-              word={(guesses[i] || "").toLowerCase()}
-              rowIndex={i}
-            />
-          ) : (
-            <ActiveRow
-              key={`worlde-incomplete-row-${i}`}
-              word={(guesses[i] || "").toLowerCase()}
-              rowIndex={i}
-            />
-          )
-        )}
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Row
+            key={`worlde-row-${i}`}
+            word={(guesses[i] || "").toLowerCase()}
+            rowIndex={i}
+            isAlreadyGuessed={i < guesses.length - 1}
+          />
+        ))}
       </Container>
       <Keyboard guesses={guesses} />
     </MainContainer>
